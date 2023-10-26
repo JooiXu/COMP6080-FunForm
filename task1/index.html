@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta title="FunForm">
+        <style>
+            table {
+                width: 400px;
+                border: solid gray;
+            }
+            td {
+                border: solid black;
+            }
+            td, input {
+                font-size: 20px;
+                line-height: 30px;
+            }
+            select {
+                font-size: 20px;
+                height: 32px;
+                line-height: 30px;
+            }
+            button {
+                font-size: 20px;
+                height: 32px;
+                line-height: 30px;
+                border: solid lightgray;
+            }
+            input, select {
+                background: none;
+                border: solid gray;
+            }
+            textarea {
+                width: 400px;
+                height: 200px;
+            }
+            *:focus {
+                outline: none;
+            }
+        </style>
+    </head>
+    <body>
+        <form name="form">
+            <table>
+                <tr>
+                    <td>Street Name</td>
+                    <td>
+                        <input name="street-name" maxlength="50" onblur="render()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Suburb</td>
+                    <td>
+                        <input name="suburb" maxlength="50" onblur="render()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Postcode</td>
+                    <td>
+                        <input name="postcode" maxlength="4" onblur="render()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Date of birth</td>
+                    <td>
+                        <input name="date-of-birth" maxlength="10" onblur="render()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Building Type</td>
+                    <td>
+                        <select name="building-type" onchange="render()">
+                            <option value="apartment">Apartment</option>
+                            <option value="house">House</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Features</td>
+                    <td>
+                        <input id="heating" type="checkbox" name="features" onchange="render()" value="Heating">
+                        <label for="heating">Heating</label><br/>
+                        <input id="air-conditioning" type="checkbox" name="features" onchange="render()" value="AirConditioning">
+                        <label for="air-conditioning">AirConditioning</label><br/>
+                        <input id="pool" type="checkbox" name="features" onchange="render()" value="Pool">
+                        <label for="pool">Pool</label><br/>
+                        <input id="sandpit" type="checkbox" name="features" onchange="render()" value="Sandpit">
+                        <label for="sandpit">Sandpit</label><br/>
+                        <button type="button" id="btn-features" style="margin: 4px;" onclick="toggleAllFeatures()">Select All</button><br/>
+                    </td>
+                </tr>
+            </table>
+            <br/>
+            <button type="reset">Reset</button>
+            <br/><br/>
+            <textarea name="error"></textarea>
+        </form>
+    </body>
+    <script>
+        function toggleAllFeatures() {
+            const btnFeatures = document.getElementById("btn-features");
+            if (btnFeatures.innerText === "Select All") {
+                const features = document.getElementsByName("features");
+                features.forEach((f) => {
+                    f.checked = true;
+                });
+                btnFeatures.innerText = "Diselect All";
+            } else {
+                const features = document.getElementsByName("features");
+                features.forEach((f) => {
+                    f.checked = false;
+                });
+                btnFeatures.innerText = "Select All";
+            }
+            render()
+        }
+
+        function render() {
+            console.log("render");
+            const form = document.forms["form"];
+            const textarea = form["error"];
+            textarea.value = "";
+            const streetName = form["street-name"];
+            if (streetName.value.length < 3) {
+                textarea.value = "Please input a valid street name";
+                return;
+            }
+            const suburb = form["suburb"];
+            if (suburb.value.length < 3) {
+                textarea.value = "Please input a valid subsurb";
+                return;
+            }
+            const postcode = form["postcode"];
+            if (!/[0-9]{4}/.test(postcode.value)) {
+                textarea.value = "Please input a valid postcode";
+                return;
+            }
+            const dateOfBirth = form["date-of-birth"];
+            if (!/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/.test(dateOfBirth.value)) {
+                textarea.value = "Please input a valid date of birth";
+                return;
+            }
+            const buildingType = form["building-type"];
+            console.log(buildingType.value);
+            const features = [...form["features"]];
+            const checkedFeatures = features.filter((f) => f.checked);
+            let featuresStr = "";
+            if (checkedFeatures.length === 0) {
+                featuresStr = "no features";
+            } else if (checkedFeatures.length === 1) {
+                featuresStr = checkedFeatures[0].value;
+            } else if (checkedFeatures.length === 2) {
+                featuresStr = checkedFeatures.map((f) => f.value).join(" and ");
+            } else {
+                featuresStr = checkedFeatures.filter((_, index) => index < checkedFeatures.length - 1)
+                                    .map((f) => f.value).join(", ");
+                featuresStr +=  ", and " + checkedFeatures[checkedFeatures.length - 1].value;
+            }
+            textarea.value = `You are ${calAge(dateOfBirth.value)} years old, and your address is ${streetName.value} St, ${suburb.value}, ${postcode.value}, Australia. Your building is ${buildingType.value.startsWith("a") ? "an" : "a"} ${buildingType.value}, and it has ${featuresStr}.`;
+        }
+
+        function calAge(birthday) {
+            const delatMs = Date.now() - new Date(birthday).getTime();
+            const ageDate = new Date(delatMs);
+            return Math.abs(ageDate.getUTCFullYear() - 1970);
+        }
+    </script>
+</html>
